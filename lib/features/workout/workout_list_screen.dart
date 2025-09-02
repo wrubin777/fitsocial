@@ -6,7 +6,7 @@ import '../../shared/widgets/feed_widgets.dart';
 import '../../shared/widgets/common_widgets.dart';
 
 class WorkoutListScreen extends StatefulWidget {
-  const WorkoutListScreen({Key? key}) : super(key: key);
+  const WorkoutListScreen({super.key});
 
   @override
   State<WorkoutListScreen> createState() => _WorkoutListScreenState();
@@ -15,6 +15,7 @@ class WorkoutListScreen extends StatefulWidget {
 class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedCategory = 'All';
+  final String _currentUserId = 'currentUser'; // This would come from auth service
 
   @override
   void initState() {
@@ -26,6 +27,44 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Toggle save state of a workout
+  void _toggleSaveWorkout(String workoutId) {
+    setState(() {
+      final workoutIndex = _mockWorkouts.indexWhere((w) => w.id == workoutId);
+      if (workoutIndex != -1) {
+        final workout = _mockWorkouts[workoutIndex];
+        final List<String> updatedSaves = List.from(workout.saves);
+        
+        if (updatedSaves.contains(_currentUserId)) {
+          // Unsave workout
+          updatedSaves.remove(_currentUserId);
+        } else {
+          // Save workout
+          updatedSaves.add(_currentUserId);
+        }
+
+        // Update the workout in the list with new saves list
+        _mockWorkouts[workoutIndex] = WorkoutModel(
+          id: workout.id,
+          userId: workout.userId,
+          title: workout.title,
+          description: workout.description,
+          category: workout.category,
+          difficulty: workout.difficulty,
+          durationMinutes: workout.durationMinutes,
+          exercises: workout.exercises,
+          imageUrls: workout.imageUrls,
+          likes: workout.likes,
+          saves: updatedSaves,
+          createdAt: workout.createdAt,
+        );
+
+        // In a real app, this would be a call to a service
+        // workoutService.toggleSave(workoutId, _currentUserId);
+      }
+    });
   }
 
   // Mock data - in a real app, this would come from an API or database
@@ -129,7 +168,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
                   _buildCategoryChip('All'),
                   ...AppConstants.workoutCategories
                       .map((category) => _buildCategoryChip(category))
-                      .toList(),
+                      ,
                 ],
               ),
             ),
@@ -144,9 +183,9 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
                 _buildWorkoutList(_mockWorkouts),
                 
                 // Saved Tab
-                const AppEmptyState(
-                  message: 'You haven\'t saved any workouts yet.',
-                  icon: Icons.bookmark_outline,
+                _buildWorkoutList(
+                  _mockWorkouts.where((workout) => workout.saves.contains(_currentUserId)).toList(),
+                  isSavedTab: true,
                 ),
                 
                 // My Workouts Tab
@@ -185,11 +224,13 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
     );
   }
 
-  Widget _buildWorkoutList(List<WorkoutModel> workouts) {
+  Widget _buildWorkoutList(List<WorkoutModel> workouts, {bool isSavedTab = false}) {
     if (workouts.isEmpty) {
-      return const AppEmptyState(
-        message: 'No workouts found.',
-        icon: Icons.fitness_center_outlined,
+      return AppEmptyState(
+        message: isSavedTab 
+            ? 'You haven\'t saved any workouts yet.' 
+            : 'No workouts found.',
+        icon: isSavedTab ? Icons.bookmark_outline : Icons.fitness_center_outlined,
       );
     }
 
@@ -202,15 +243,31 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
           workout: workout,
           onTap: () {
             // Navigate to workout details
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Workout details coming soon!')),
+            );
           },
           onLike: () {
             // Like functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Like feature coming soon!')),
+            );
           },
           onSave: () {
             // Save functionality
+            _toggleSaveWorkout(workout.id);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  workout.saves.contains(_currentUserId) 
+                      ? 'Workout removed from saved' 
+                      : 'Workout saved successfully'
+                ),
+              ),
+            );
           },
-          isLiked: workout.likes.contains('currentUserId'),
-          isSaved: workout.saves.contains('currentUserId'),
+          isLiked: workout.likes.contains(_currentUserId),
+          isSaved: workout.saves.contains(_currentUserId),
           showUser: true,
           username: 'username', // This would be fetched in a real app
           userProfileImage: null,

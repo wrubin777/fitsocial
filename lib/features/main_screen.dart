@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_theme.dart';
-import '../features/feed/feed_screen.dart';
-import '../features/profile/profile_screen.dart';
-import '../features/workout/workout_list_screen.dart';
+import 'profile/profile_screen.dart';
+import 'workout/workout_list_screen.dart';
+import 'feed/feed_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
