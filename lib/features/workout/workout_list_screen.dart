@@ -4,6 +4,7 @@ import '../../core/utils/constants.dart';
 import '../../shared/models/workout_model.dart';
 import '../../shared/widgets/feed_widgets.dart';
 import '../../shared/widgets/common_widgets.dart';
+import '../../shared/services/workout_store.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   const WorkoutListScreen({super.key});
@@ -21,32 +22,47 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+  // Listen to external tab requests (e.g., show My Workouts)
+  WorkoutStore.instance.selectedTab.addListener(_onExternalTabRequest);
   }
 
   @override
   void dispose() {
+    WorkoutStore.instance.selectedTab.removeListener(_onExternalTabRequest);
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _onExternalTabRequest() {
+    final requested = WorkoutStore.instance.selectedTab.value;
+    if (_tabController.index != requested && requested >= 0 && requested < 3) {
+      // Avoid calling setState synchronously during layout/paint; schedule for next frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _tabController.index = requested;
+          });
+        }
+      });
+    }
   }
 
   // Toggle save state of a workout
   void _toggleSaveWorkout(String workoutId) {
     setState(() {
-      final workoutIndex = _mockWorkouts.indexWhere((w) => w.id == workoutId);
+      final workouts = store.workouts.value;
+      final workoutIndex = workouts.indexWhere((w) => w.id == workoutId);
       if (workoutIndex != -1) {
-        final workout = _mockWorkouts[workoutIndex];
+        final workout = workouts[workoutIndex];
         final List<String> updatedSaves = List.from(workout.saves);
-        
+
         if (updatedSaves.contains(_currentUserId)) {
-          // Unsave workout
           updatedSaves.remove(_currentUserId);
         } else {
-          // Save workout
           updatedSaves.add(_currentUserId);
         }
 
-        // Update the workout in the list with new saves list
-        _mockWorkouts[workoutIndex] = WorkoutModel(
+        final updated = WorkoutModel(
           id: workout.id,
           userId: workout.userId,
           title: workout.title,
@@ -61,69 +77,14 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
           createdAt: workout.createdAt,
         );
 
-        // In a real app, this would be a call to a service
-        // workoutService.toggleSave(workoutId, _currentUserId);
+        store.updateWorkout(updated);
       }
     });
   }
 
   // Mock data - in a real app, this would come from an API or database
-  final List<WorkoutModel> _mockWorkouts = [
-    WorkoutModel(
-      id: '1',
-      userId: 'user1',
-      title: 'Full Body HIIT',
-      description: 'High intensity interval training workout that targets all major muscle groups.',
-      category: 'HIIT',
-      difficulty: 'Intermediate',
-      durationMinutes: 45,
-      exercises: [
-        Exercise(
-          name: 'Burpees',
-          sets: 3,
-          repsPerSet: 15,
-          muscleGroup: 'Full Body',
-        ),
-        Exercise(
-          name: 'Mountain Climbers',
-          sets: 3,
-          repsPerSet: 20,
-          muscleGroup: 'Core',
-        ),
-      ],
-      imageUrls: [],
-      likes: ['user2', 'user3'],
-      saves: ['user4'],
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    WorkoutModel(
-      id: '2',
-      userId: 'user2',
-      title: 'Upper Body Strength',
-      description: 'Build upper body strength with this comprehensive workout routine.',
-      category: 'Strength Training',
-      difficulty: 'Advanced',
-      durationMinutes: 60,
-      exercises: [
-        Exercise(
-          name: 'Bench Press',
-          sets: 4,
-          repsPerSet: 10,
-          muscleGroup: 'Chest',
-        ),
-        Exercise(
-          name: 'Pull-ups',
-          sets: 4,
-          repsPerSet: 8,
-          muscleGroup: 'Back',
-        ),
-      ],
-      imageUrls: [],
-      likes: ['user1'],
-      saves: [],
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-  ];
+  // Use WorkoutStore for centralized, observable workouts list
+  final store = WorkoutStore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -179,19 +140,34 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> with SingleTicker
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Discover Tab
-                _buildWorkoutList(_mockWorkouts),
-                
-                // Saved Tab
-                _buildWorkoutList(
-                  _mockWorkouts.where((workout) => workout.saves.contains(_currentUserId)).toList(),
-                  isSavedTab: true,
+                // Discover / Saved / My Workouts driven by the store
+                ValueListenableBuilder<List<WorkoutModel>>(
+                  valueListenable: store.workouts,
+                  builder: (context, workouts, _) {
+                    return _buildWorkoutList(workouts);
+                  },
                 ),
-                
-                // My Workouts Tab
-                const AppEmptyState(
-                  message: 'You haven\'t created any workouts yet.',
-                  icon: Icons.fitness_center_outlined,
+
+                ValueListenableBuilder<List<WorkoutModel>>(
+                  valueListenable: store.workouts,
+                  builder: (context, workouts, _) {
+                    final saved = workouts.where((workout) => workout.saves.contains(_currentUserId)).toList();
+                    return _buildWorkoutList(saved, isSavedTab: true);
+                  },
+                ),
+
+                ValueListenableBuilder<List<WorkoutModel>>(
+                  valueListenable: store.workouts,
+                  builder: (context, workouts, _) {
+                    final mine = workouts.where((w) => w.userId == _currentUserId).toList();
+                    if (mine.isEmpty) {
+                      return const AppEmptyState(
+                        message: 'You haven\'t created any workouts yet.',
+                        icon: Icons.fitness_center_outlined,
+                      );
+                    }
+                    return _buildWorkoutList(mine);
+                  },
                 ),
               ],
             ),

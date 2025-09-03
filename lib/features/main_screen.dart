@@ -3,6 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_theme.dart';
 import 'profile/profile_screen.dart';
 import 'workout/workout_list_screen.dart';
+import 'workout/create_workout_screen.dart';
+import '../shared/services/workout_store.dart';
+import '../shared/models/workout_model.dart';
 import 'feed/feed_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -25,6 +28,13 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Ensure WorkoutStore is initialized
+    WorkoutStore.instance;
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -37,8 +47,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
+    print('_onItemTapped called with index: $index');
+    
     // If it's the center button (create), show the create options bottom sheet
     if (index == 2) {
+      print('Showing create options sheet');
       _showCreateOptionsSheet();
       return;
     }
@@ -50,6 +63,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showCreateOptionsSheet() {
+    print('_showCreateOptionsSheet called');
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.darkSurface,
@@ -83,8 +97,12 @@ class _MainScreenState extends State<MainScreen> {
                 title: 'Create Workout',
                 description: 'Share your workout routine with followers',
                 onTap: () {
+                  // Close the bottom sheet and open the CreateWorkoutScreen.
+                  // If a workout is returned, add it to the store and switch to My Workouts.
+                  print('Create Workout option tapped in bottom sheet');
                   Navigator.pop(context);
-                  // Navigate to create workout screen
+                  print('Bottom sheet closed, calling _openCreateWorkout');
+                  _openCreateWorkout(); // Call the new helper method
                 },
               ),
               const SizedBox(height: 16),
@@ -105,6 +123,40 @@ class _MainScreenState extends State<MainScreen> {
         );
       },
     );
+  }
+  
+  Future<void> _openCreateWorkout() async {
+    print('_openCreateWorkout method called');
+    try {
+      print('About to push CreateWorkoutScreen');
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CreateWorkoutScreen()),
+      );
+      print('Successfully returned from CreateWorkoutScreen with result: $result');
+
+      if (result is WorkoutModel) {
+        print('Result is a WorkoutModel, adding to store');
+        // Add to store and switch to the Workouts screen and My Workouts tab
+        final store = WorkoutStore.instance;
+        store.addWorkout(result);
+        print('Workout added to store, switching to workouts tab');
+        // switch to workouts (index 1)
+        setState(() {
+          _currentIndex = 1;
+          _pageController.jumpToPage(1);
+        });
+        print('Switched to workouts screen, requesting My Workouts tab');
+        // request WorkoutListScreen to show My Workouts tab (2)
+        store.selectedTab.value = 2;
+        print('Tab switch requested');
+      } else {
+        print('Result is not a WorkoutModel: ${result.runtimeType}');
+      }
+    } catch (e, stackTrace) {
+      print('Error in _openCreateWorkout: $e');
+      print('StackTrace: $stackTrace');
+    }
   }
 
   Widget _buildCreateOption(
@@ -225,8 +277,12 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildCreateButton() {
+    print('_buildCreateButton called');
     return InkWell(
-      onTap: () => _onItemTapped(2),
+      onTap: () {
+        print('Center + button tapped!');
+        _showCreateOptionsSheet();
+      },
       borderRadius: BorderRadius.circular(24),
       child: Container(
         height: 48,

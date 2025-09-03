@@ -15,14 +15,14 @@ class FeedPostCard extends StatelessWidget {
   final Function()? onWorkoutTap;
 
   const FeedPostCard({
-    Key? key,
+    super.key,
     required this.post,
     required this.onLike,
     required this.onComment,
     required this.onShare,
     required this.onUserTap,
     this.onWorkoutTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +215,7 @@ class WorkoutCard extends StatelessWidget {
   final String? userProfileImage;
 
   const WorkoutCard({
-    Key? key,
+    super.key,
     required this.workout,
     this.onTap,
     this.onSave,
@@ -225,7 +225,7 @@ class WorkoutCard extends StatelessWidget {
     this.showUser = false,
     this.username,
     this.userProfileImage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

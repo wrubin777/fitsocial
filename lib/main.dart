@@ -3,9 +3,13 @@ import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/constants.dart';
 import 'features/auth/auth_screen.dart';
+import 'shared/services/workout_store.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize WorkoutStore early to ensure it's ready
+  WorkoutStore.instance;
   
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
@@ -33,7 +37,7 @@ class MyApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const AuthScreen(),
+      home: const AuthScreen(), // Restored to proper auth flow
     );
   }
 }
