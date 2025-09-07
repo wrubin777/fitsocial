@@ -172,8 +172,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildProfileHeader() {
     return Container(
       color: AppTheme.darkBackground,
-      padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 16),
-      child: Column(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Avatar
@@ -258,6 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

@@ -7,10 +7,15 @@ class PostModel {
   final String? userProfileImage;
   final String content;
   final List<String> imageUrls;
-  final String? workoutId;
+  final String? workoutId; // Optional - for linking to workouts
+  final String category; // General, Workout, Progress, Nutrition, etc.
+  final List<String> hashtags; // Extracted hashtags from content
+  final String? location; // Optional location
+  final bool isPublic; // Privacy setting
   final List<String> likes;
   final List<Map<String, dynamic>> comments;
   final DateTime createdAt;
+  final DateTime? updatedAt;
 
   PostModel({
     required this.id,
@@ -20,9 +25,14 @@ class PostModel {
     required this.content,
     this.imageUrls = const [],
     this.workoutId,
+    this.category = 'General',
+    this.hashtags = const [],
+    this.location,
+    this.isPublic = true,
     this.likes = const [],
     this.comments = const [],
     required this.createdAt,
+    this.updatedAt,
   });
 
   factory PostModel.fromMap(Map<String, dynamic> map, {String? id}) {
@@ -34,6 +44,10 @@ class PostModel {
       content: map['content'] ?? '',
       imageUrls: List<String>.from(map['imageUrls'] ?? []),
       workoutId: map['workoutId'],
+      category: map['category'] ?? 'General',
+      hashtags: List<String>.from(map['hashtags'] ?? []),
+      location: map['location'],
+      isPublic: map['isPublic'] ?? true,
       likes: List<String>.from(map['likes'] ?? []),
       comments: List<Map<String, dynamic>>.from(map['comments'] ?? []),
       createdAt: map['createdAt'] != null 
@@ -41,6 +55,11 @@ class PostModel {
           ? (map['createdAt'] as Timestamp).toDate() 
           : DateTime.parse(map['createdAt']))
         : DateTime.now(),
+      updatedAt: map['updatedAt'] != null 
+        ? (map['updatedAt'] is Timestamp 
+          ? (map['updatedAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['updatedAt']))
+        : null,
     );
   }
 
@@ -53,9 +72,14 @@ class PostModel {
       'content': content,
       'imageUrls': imageUrls,
       'workoutId': workoutId,
+      'category': category,
+      'hashtags': hashtags,
+      'location': location,
+      'isPublic': isPublic,
       'likes': likes,
       'comments': comments,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -67,9 +91,14 @@ class PostModel {
     String? content,
     List<String>? imageUrls,
     String? workoutId,
+    String? category,
+    List<String>? hashtags,
+    String? location,
+    bool? isPublic,
     List<String>? likes,
     List<Map<String, dynamic>>? comments,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -79,9 +108,36 @@ class PostModel {
       content: content ?? this.content,
       imageUrls: imageUrls ?? this.imageUrls,
       workoutId: workoutId ?? this.workoutId,
+      category: category ?? this.category,
+      hashtags: hashtags ?? this.hashtags,
+      location: location ?? this.location,
+      isPublic: isPublic ?? this.isPublic,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  // Helper method to extract hashtags from content
+  static List<String> extractHashtags(String content) {
+    final RegExp hashtagRegex = RegExp(r'#\w+');
+    return hashtagRegex.allMatches(content)
+        .map((match) => match.group(0)!)
+        .toList();
+  }
+
+  // Helper method to get post type based on content and images
+  String get postType {
+    if (imageUrls.isNotEmpty && content.isEmpty) return 'image';
+    if (imageUrls.isNotEmpty && content.isNotEmpty) return 'image_text';
+    if (workoutId != null) return 'workout';
+    return 'text';
+  }
+
+  // Helper method to check if post has images
+  bool get hasImages => imageUrls.isNotEmpty;
+
+  // Helper method to check if post is linked to a workout
+  bool get isWorkoutPost => workoutId != null;
 }

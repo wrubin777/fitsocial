@@ -25,6 +25,10 @@ class _FeedScreenState extends State<FeedScreen> {
       content: 'Just finished an intense leg day workout! 💪 Feeling the burn but it\'s worth it. #legday #fitness #nopainnogain',
       imageUrls: [],
       workoutId: 'workout1',
+      category: 'Workout',
+      hashtags: ['#legday', '#fitness', '#nopainnogain'],
+      location: 'Gym',
+      isPublic: true,
       likes: ['user2', 'user3'],
       comments: [
         {'userId': 'user2', 'username': 'maria_fit', 'text': 'Great job! Keep pushing!', 'createdAt': DateTime.now().toString()}
@@ -36,11 +40,30 @@ class _FeedScreenState extends State<FeedScreen> {
       userId: 'user2',
       username: 'maria_fit',
       userProfileImage: null,
-      content: 'Morning cardio session complete! Starting the day with some endorphins.',
+      content: 'Morning cardio session complete! Starting the day with some endorphins. #morningworkout #cardio #motivation',
       imageUrls: [],
+      category: 'Progress',
+      hashtags: ['#morningworkout', '#cardio', '#motivation'],
+      isPublic: true,
       likes: [],
       comments: [],
       createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+    ),
+    PostModel(
+      id: '3',
+      userId: 'user3',
+      username: 'fitness_guru',
+      userProfileImage: null,
+      content: 'Check out this amazing transformation! 6 months of consistent training and proper nutrition. #transformation #fitness #motivation',
+      imageUrls: ['https://example.com/before.jpg', 'https://example.com/after.jpg'],
+      category: 'Progress',
+      hashtags: ['#transformation', '#fitness', '#motivation'],
+      isPublic: true,
+      likes: ['user1', 'user2', 'user4'],
+      comments: [
+        {'userId': 'user1', 'username': 'john_fitness', 'text': 'Incredible progress! 🔥', 'createdAt': DateTime.now().toString()}
+      ],
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
     ),
   ];
   

@@ -6,7 +6,10 @@ import 'workout/workout_list_screen.dart';
 import 'workout/create_workout_screen.dart';
 import '../shared/services/workout_store.dart';
 import '../shared/models/workout_model.dart';
+import '../shared/models/post_model.dart';
 import 'feed/feed_screen.dart';
+import 'feed/create_post_screen.dart';
+import 'notifications/notifications_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -23,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
     const FeedScreen(),
     const WorkoutListScreen(),
     Container(), // Placeholder for create post/workout
-    Container(), // Placeholder for notifications
+    const NotificationsScreen(),
     const ProfileScreen(),
   ];
 
@@ -47,11 +50,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    print('_onItemTapped called with index: $index');
-    
     // If it's the center button (create), show the create options bottom sheet
     if (index == 2) {
-      print('Showing create options sheet');
       _showCreateOptionsSheet();
       return;
     }
@@ -63,7 +63,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showCreateOptionsSheet() {
-    print('_showCreateOptionsSheet called');
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.darkSurface,
@@ -114,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
                 description: 'Share your progress and fitness journey',
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to create post screen
+                  _openCreatePost();
                 },
               ),
               const SizedBox(height: 24),
@@ -155,6 +154,34 @@ class _MainScreenState extends State<MainScreen> {
       }
     } catch (e, stackTrace) {
       print('Error in _openCreateWorkout: $e');
+      print('StackTrace: $stackTrace');
+    }
+  }
+
+  Future<void> _openCreatePost() async {
+    print('_openCreatePost method called');
+    try {
+      print('About to push CreatePostScreen');
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+      );
+      print('Successfully returned from CreatePostScreen with result: $result');
+
+      if (result is PostModel) {
+        print('Result is a PostModel, post created successfully');
+        // In a real app, you would add this to your posts store/feed
+        // For now, just switch to the feed screen to show the new post
+        setState(() {
+          _currentIndex = 0;
+          _pageController.jumpToPage(0);
+        });
+        print('Switched to feed screen to show new post');
+      } else {
+        print('Result is not a PostModel: ${result.runtimeType}');
+      }
+    } catch (e, stackTrace) {
+      print('Error in _openCreatePost: $e');
       print('StackTrace: $stackTrace');
     }
   }
@@ -277,7 +304,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildCreateButton() {
-    print('_buildCreateButton called');
     return InkWell(
       onTap: () {
         print('Center + button tapped!');
