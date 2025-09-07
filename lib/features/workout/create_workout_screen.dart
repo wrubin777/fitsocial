@@ -331,7 +331,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
             
             // Category dropdown
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: const InputDecoration(
                 labelText: 'Category*',
               ),
@@ -359,7 +359,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
             
             // Difficulty dropdown
             DropdownButtonFormField<String>(
-              value: _difficulty,
+              initialValue: _difficulty,
               decoration: const InputDecoration(
                 labelText: 'Difficulty*',
               ),
@@ -419,7 +419,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                   _isPublic = value;
                 });
               },
-              activeColor: AppTheme.accentColor,
+              activeThumbColor: AppTheme.accentColor,
             ),
             const SizedBox(height: 24),
             

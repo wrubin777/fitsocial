@@ -332,7 +332,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
                 });
               },
               subtitle: Text(_isReps ? 'Repetitions' : 'Duration'),
-              activeColor: AppTheme.accentColor,
+              activeThumbColor: AppTheme.accentColor,
             ),
             const SizedBox(height: 8),
             
@@ -386,7 +386,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
             
             // Muscle group dropdown
             DropdownButtonFormField<String>(
-              value: _muscleGroup,
+              initialValue: _muscleGroup,
               decoration: const InputDecoration(
                 labelText: 'Muscle Group*',
               ),

@@ -97,7 +97,6 @@ class AppTheme {
       primary: primaryColor,
       secondary: accentColor,
       surface: darkSurface,
-      background: darkBackground,
       error: errorColor,
     ),
     cardTheme: CardThemeData(

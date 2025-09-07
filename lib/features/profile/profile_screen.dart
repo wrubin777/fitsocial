@@ -18,7 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   late TabController _tabController;
 
   @override
-  void initState() {
+  void initState() { 
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
   }

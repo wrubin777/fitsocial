@@ -21,7 +21,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
   
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   WorkoutModel? _selectedWorkout;
   String _selectedCategory = 'General';
   bool _isLoading = false;
@@ -305,7 +305,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         
         // Selected images
         if (_selectedImages.isNotEmpty)
-          Container(
+          SizedBox(
             height: 120,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -620,7 +620,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               // Images preview
               if (_selectedImages.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Container(
+                SizedBox(
                   height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,

@@ -6,6 +6,7 @@ import '../../shared/models/post_model.dart';
 import '../../shared/widgets/feed_widgets.dart';
 import '../../shared/widgets/common_widgets.dart';
 import 'post_details_screen.dart';
+import '../messages/messages_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -259,7 +260,12 @@ class _FeedScreenState extends State<FeedScreen> {
             icon: const Icon(FontAwesomeIcons.solidPaperPlane),
             onPressed: () {
               // Navigate to messages screen
-              AppUtils.showSnackBar(context, 'Messages feature coming soon!');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MessagesScreen(),
+                ),
+              );
             },
           ),
         ],
