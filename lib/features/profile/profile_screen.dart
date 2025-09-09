@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_utils.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/models/workout_model.dart';
+import '../../shared/services/posts_store.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/feed_widgets.dart';
 
@@ -16,11 +17,12 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final PostsStore _postsStore = PostsStore.instance;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); // Added Posts tab
   }
 
   @override
@@ -81,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       body: DefaultTabController(
-        length: 2,
+        length: 3,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
@@ -111,6 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     indicatorColor: AppTheme.accentColor,
                     tabs: const [
                       Tab(icon: Icon(Icons.grid_on), text: 'Workouts'),
+                      Tab(icon: Icon(Icons.photo_library), text: 'Posts'),
                       Tab(icon: Icon(FontAwesomeIcons.chartLine), text: 'Stats'),
                     ],
                   ),
@@ -149,6 +152,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         );
                       },
                     ),
+
+              // Posts tab
+              _buildPostsTab(),
 
               // Stats tab
               SingleChildScrollView(
@@ -230,14 +236,21 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 height: 24,
                 width: 1,
                 color: AppTheme.darkGrey,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+              _buildStatColumn(_postsStore.getPostsCount(_mockUser.id), 'Posts'),
+              Container(
+                height: 24,
+                width: 1,
+                color: AppTheme.darkGrey,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
               _buildStatColumn(_mockUser.followers.length, 'Followers'),
               Container(
                 height: 24,
                 width: 1,
                 color: AppTheme.darkGrey,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
               _buildStatColumn(_mockUser.following.length, 'Following'),
             ],
@@ -385,6 +398,47 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPostsTab() {
+    final userPosts = _postsStore.getPostsByUser(_mockUser.id);
+    
+    if (userPosts.isEmpty) {
+      return const AppEmptyState(
+        message: 'No posts yet. Create your first post to share your fitness journey!',
+        icon: Icons.photo_library_outlined,
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: userPosts.length,
+      itemBuilder: (context, index) {
+        final post = userPosts[index];
+        return FeedPostCard(
+          post: post,
+          onLike: (postId) {
+            _postsStore.likePost(postId, _mockUser.id);
+            setState(() {}); // Trigger rebuild
+          },
+          onComment: (postId) {
+            // Navigate to post details for commenting
+            AppUtils.showSnackBar(context, 'Navigate to post details');
+          },
+          onShare: (postId) {
+            AppUtils.showSnackBar(context, 'Share post');
+          },
+          onUserTap: () {
+            // Already on user's profile
+          },
+          onWorkoutTap: post.workoutId != null
+              ? () {
+                  AppUtils.showSnackBar(context, 'View linked workout');
+                }
+              : null,
+        );
+      },
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../core/utils/app_utils.dart';
 import '../../shared/models/post_model.dart';
 import '../../shared/models/workout_model.dart';
 import '../../shared/services/workout_store.dart';
+import '../../shared/services/posts_store.dart';
 import '../../shared/widgets/common_widgets.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -801,8 +802,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         createdAt: DateTime.now(),
       );
 
-      // In a real app, you would save this to your backend
-      print('Post created: ${post.toMap()}');
+      // Add post to the posts store
+      final postsStore = PostsStore.instance;
+      postsStore.addPost(post);
 
       AppUtils.showSnackBar(context, 'Post published successfully!');
       Navigator.pop(context, post);
