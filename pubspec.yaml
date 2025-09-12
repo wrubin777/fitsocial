@@ -41,6 +41,9 @@ dependencies:
   cloud_firestore: ^6.0.1
   firebase_storage: ^13.0.1
   
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+  
   # UI packages
   google_fonts: ^6.1.0
   cached_network_image: ^3.3.0

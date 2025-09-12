@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/common_widgets.dart';
+import '../../shared/services/auth_service.dart';
 import '../main_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
+  final AuthService _authService = AuthService();
   
   @override
   void dispose() {
@@ -53,6 +55,38 @@ class _AuthScreenState extends State<AuthScreen> {
         MaterialPageRoute(builder: (ctx) => const MainScreen()),
       );
     });
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final userCredential = await _authService.signInWithGoogle();
+      
+      if (userCredential != null && mounted) {
+        // Navigate to main screen after successful Google sign-in
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => const MainScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
   
   @override
@@ -217,9 +251,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           _buildSocialButton(
                             icon: FontAwesomeIcons.google,
                             color: Colors.redAccent,
-                            onTap: () {
-                              // Google sign-in
-                            },
+                            onTap: _signInWithGoogle,
                           ),
                           const SizedBox(width: 24),
                           _buildSocialButton(
